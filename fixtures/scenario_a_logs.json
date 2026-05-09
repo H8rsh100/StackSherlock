@@ -1,0 +1,38 @@
+[
+  {
+    "timestamp": "2024-06-10T03:38:00Z",
+    "service": "gitlab-ci",
+    "level": "INFO",
+    "message": "Deployment event: auth-service tagged with v2.3.1"
+  },
+  {
+    "timestamp": "2024-06-10T03:42:00Z",
+    "service": "auth-service",
+    "level": "WARN",
+    "message": "DB connection pool utilization at 95% (9/10 connections active)"
+  },
+  {
+    "timestamp": "2024-06-10T03:43:00Z",
+    "service": "auth-service",
+    "level": "ERROR",
+    "message": "OperationalError: too many connections"
+  },
+  {
+    "timestamp": "2024-06-10T03:44:00Z",
+    "service": "auth-service",
+    "level": "WARN",
+    "message": "p99 latency degraded: 840ms (baseline 120ms)"
+  },
+  {
+    "timestamp": "2024-06-10T03:45:00Z",
+    "service": "checkout-api",
+    "level": "ERROR",
+    "message": "Upstream timeout: auth-service failed to respond within 5000ms"
+  },
+  {
+    "timestamp": "2024-06-10T03:46:00Z",
+    "service": "api-gateway",
+    "level": "CRITICAL",
+    "message": "Global error rate spike: 34% of requests failing (baseline 0.3%)"
+  }
+]
