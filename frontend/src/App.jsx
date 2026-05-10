@@ -4,11 +4,11 @@ import '@xyflow/react/dist/style.css';
 import { AlertCircle, CheckCircle, Activity, GitCommit } from 'lucide-react';
 
 const initialNodes = [
-  { id: '1', position: { x: 250, y: 50 }, data: { label: 'Deployment v2.3.1' }, style: { backgroundColor: '#475569', color: '#fff', border: 'none', padding: '10px', borderRadius: '5px' } },
-  { id: '2', position: { x: 250, y: 150 }, data: { label: 'Connection Pool Misconfigured' }, style: { backgroundColor: '#f97316', color: '#fff', border: 'none', padding: '10px', borderRadius: '5px' } },
-  { id: '3', position: { x: 250, y: 250 }, data: { label: 'DB Connections Exhausted' }, style: { backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '10px', borderRadius: '5px' } },
-  { id: '4', position: { x: 250, y: 350 }, data: { label: 'Auth Service Latency +840ms' }, style: { backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '10px', borderRadius: '5px' } },
-  { id: '5', position: { x: 250, y: 450 }, data: { label: 'Checkout API Timeouts' }, style: { backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '10px', borderRadius: '5px' } },
+  { id: '1', position: { x: 250, y: 50 }, data: { label: 'Deployment v2.3.1' }, style: { backgroundColor: '#1e293b', color: '#cbd5e1', border: '1px solid #334155', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' } },
+  { id: '2', position: { x: 250, y: 150 }, data: { label: 'Connection Pool Misconfigured' }, style: { backgroundColor: '#7c2d12', color: '#fed7aa', border: '1px solid #9a3412', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(234, 88, 12, 0.2)' } },
+  { id: '3', position: { x: 250, y: 250 }, data: { label: 'DB Connections Exhausted' }, style: { backgroundColor: '#7f1d1d', color: '#fca5a5', border: '1px solid #b91c1c', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(220, 38, 38, 0.3)' } },
+  { id: '4', position: { x: 250, y: 350 }, data: { label: 'Auth Service Latency +840ms' }, style: { backgroundColor: '#7f1d1d', color: '#fca5a5', border: '1px solid #b91c1c', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(220, 38, 38, 0.3)' } },
+  { id: '5', position: { x: 250, y: 450 }, data: { label: 'Checkout API Timeouts' }, style: { backgroundColor: '#991b1b', color: '#fef2f2', border: '1px solid #dc2626', padding: '12px', borderRadius: '8px', boxShadow: '0 0 20px rgba(220, 38, 38, 0.6)' } },
 ];
 
 const initialEdges = [
@@ -81,7 +81,7 @@ const initialEdges = [
     <div className="h-screen w-screen flex flex-col bg-slate-950 text-slate-200 overflow-hidden font-sans">
       
       {/* Top Bar: Blast Radius Panel */}
-      <header className="bg-red-900/20 border-b border-red-900/50 p-4 flex items-center justify-between">
+      <header className="bg-red-950/40 backdrop-blur-md border-b border-red-900/50 p-4 flex items-center justify-between z-10 shadow-lg">
         <div className="flex items-center space-x-3">
           <AlertCircle className="text-red-500 animate-pulse w-6 h-6" />
           <h1 className="text-xl font-bold text-red-500 tracking-wide">⚠ INCIDENT DETECTED</h1>
@@ -110,8 +110,8 @@ const initialEdges = [
       <div className="flex-1 flex overflow-hidden">
         
         {/* Left Panel: Incident Feed */}
-        <aside className="w-[350px] border-r border-slate-800 bg-slate-900/50 flex flex-col">
-          <div className="p-4 border-b border-slate-800 bg-slate-900">
+        <aside className="w-[350px] border-r border-slate-800/50 bg-slate-900/60 backdrop-blur-xl flex flex-col z-10 shadow-[4px_0_24px_rgba(0,0,0,0.2)]">
+          <div className="p-4 border-b border-slate-800/50 bg-slate-900/80">
             <h2 className="font-semibold flex items-center text-slate-300"><Activity className="w-4 h-4 mr-2 text-blue-400" /> Live Agent Feed</h2>
           </div>
           <div className="p-4 space-y-4 overflow-y-auto flex-1 font-mono text-sm">
@@ -139,9 +139,9 @@ const initialEdges = [
         </main>
 
         {/* Right Panel: Hypothesis & Confidence */}
-        <aside className="w-[400px] bg-slate-900/50 flex flex-col overflow-y-auto">
+        <aside className="w-[400px] border-l border-slate-800/50 bg-slate-900/60 backdrop-blur-xl flex flex-col overflow-y-auto z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.2)]">
           {/* Confidence Panel */}
-          <div className="p-5 border-b border-slate-800">
+          <div className="p-5 border-b border-slate-800/50">
             <h2 className="font-semibold text-lg mb-3 text-slate-200">Rollback Recommendation</h2>
             <div className="flex items-center justify-between bg-slate-800/80 border border-slate-700 rounded-lg p-4 mb-5">
               <span className="text-slate-300">Confidence Score</span>
@@ -208,7 +208,7 @@ const initialEdges = [
       </div>
 
       {/* Bottom Bar: Action Queue */}
-      <footer className="border-t border-slate-800 bg-slate-900 p-4">
+      <footer className="border-t border-slate-800/80 bg-slate-900/90 backdrop-blur-xl p-4 z-10 shadow-[0_-4px_24px_rgba(0,0,0,0.3)]">
         <div className="flex justify-between items-end px-4">
           <div>
             <div className="text-xs text-slate-400 uppercase tracking-wider mb-3">Playbook Triggered: <span className="text-blue-400 font-mono bg-blue-900/20 px-2 py-1 rounded ml-2">AUTH_DB_CASCADE_FAILURE_v2</span></div>
