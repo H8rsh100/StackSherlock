@@ -87,9 +87,24 @@ async def get_blast_radius(id: str):
         "revenue_loss_per_hour": 14200
     }
 
+from agent.gitlab_mcp import execute_rollback
+
 @app.post("/approval/approve/{id}")
 async def approve_action(id: str):
-    return {"status": "approved", "incident_id": id, "gitlab_mr": "!47"}
+    # This is the strict Human Approval Gate.
+    # GitLab is NEVER touched unless this endpoint is hit.
+    
+    # In a real scenario, we would look up the targeted commit from MongoDB
+    target_commit = "abc1234"  # Mocked from Scenario A
+    
+    # Execute the action via GitLab MCP
+    result = execute_rollback(incident_id=id, commit_hash=target_commit)
+    
+    return {
+        "status": "approved_and_executed", 
+        "incident_id": id, 
+        "gitlab_result": result
+    }
 
 @app.post("/approval/reject/{id}")
 async def reject_action(id: str):
