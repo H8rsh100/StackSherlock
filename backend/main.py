@@ -1,9 +1,19 @@
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import asyncio
+import json
 
 app = FastAPI(title="StackSherlock API", description="Autonomous Incident Command Agent API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class TriggerIncidentRequest(BaseModel):
     scenario: str = "A"
@@ -28,9 +38,16 @@ async def get_incident(id: str):
     }
 
 async def mock_event_generator():
-    yield "data: {\"step\": 1, \"status\": \"started\"}\n\n"
-    await asyncio.sleep(1)
-    yield "data: {\"step\": 2, \"status\": \"investigating\"}\n\n"
+    events = [
+        {"timestamp": "03:42:01 UTC", "type": "investigating", "message": "Pulling Elastic logs..."},
+        {"timestamp": "03:42:05 UTC", "type": "reasoning", "message": "Anomaly detected in DB connections."},
+        {"timestamp": "03:42:08 UTC", "type": "investigating", "message": "Querying GitLab for recent deployments..."},
+        {"timestamp": "03:42:15 UTC", "type": "resolved", "message": "Found correlation: v2.3.1 deployed at 03:38"},
+        {"timestamp": "03:42:20 UTC", "type": "investigating", "message": "Analyzing git diff with Claude API..."}
+    ]
+    for event in events:
+        yield f"data: {json.dumps(event)}\n\n"
+        await asyncio.sleep(1.5)
 
 @app.get("/incident/{id}/stream")
 async def incident_stream(id: str):

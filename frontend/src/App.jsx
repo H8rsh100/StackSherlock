@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ReactFlow, Background, Controls } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { AlertCircle, CheckCircle, Activity, GitCommit } from 'lucide-react';
@@ -19,6 +19,31 @@ const initialEdges = [
 ];
 
 export default function App() {
+  const [feed, setFeed] = useState([]);
+
+  useEffect(() => {
+    const eventSource = new EventSource('http://localhost:8000/incident/INC-2024-047/stream');
+    
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setFeed((prev) => [...prev, data]);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
+  const getFeedColor = (type) => {
+    switch(type) {
+      case 'investigating': return 'text-blue-400';
+      case 'reasoning': return 'text-yellow-400';
+      case 'resolved': return 'text-green-400';
+      case 'alert': return 'text-red-400';
+      default: return 'text-slate-400';
+    }
+  };
+
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 text-slate-200 overflow-hidden font-sans">
       
@@ -57,26 +82,18 @@ export default function App() {
             <h2 className="font-semibold flex items-center text-slate-300"><Activity className="w-4 h-4 mr-2 text-blue-400" /> Live Agent Feed</h2>
           </div>
           <div className="p-4 space-y-4 overflow-y-auto flex-1 font-mono text-sm">
-            <div className="flex flex-col space-y-1">
-              <span className="text-slate-500 text-xs">03:42:01 UTC</span>
-              <span className="text-blue-400">[Investigating] Pulling Elastic logs...</span>
-            </div>
-            <div className="flex flex-col space-y-1">
-              <span className="text-slate-500 text-xs">03:42:05 UTC</span>
-              <span className="text-yellow-400">[Reasoning] Anomaly detected in DB connections.</span>
-            </div>
-            <div className="flex flex-col space-y-1">
-              <span className="text-slate-500 text-xs">03:42:08 UTC</span>
-              <span className="text-blue-400">[Investigating] Querying GitLab for recent deployments...</span>
-            </div>
-            <div className="flex flex-col space-y-1">
-              <span className="text-slate-500 text-xs">03:42:15 UTC</span>
-              <span className="text-green-400">[Resolved] Found correlation: v2.3.1 deployed at 03:38</span>
-            </div>
-            <div className="flex flex-col space-y-1">
-              <span className="text-slate-500 text-xs">03:42:20 UTC</span>
-              <span className="text-blue-400">[Investigating] Analyzing git diff with Claude API...</span>
-            </div>
+            {feed.length === 0 ? (
+              <div className="text-slate-500 text-xs italic">Waiting for agent stream...</div>
+            ) : (
+              feed.map((item, idx) => (
+                <div key={idx} className="flex flex-col space-y-1">
+                  <span className="text-slate-500 text-xs">{item.timestamp}</span>
+                  <span className={getFeedColor(item.type)}>
+                    [{item.type.charAt(0).toUpperCase() + item.type.slice(1)}] {item.message}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </aside>
 
