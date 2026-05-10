@@ -9,6 +9,7 @@ load_dotenv()
 
 ELASTIC_URL = os.environ.get("ELASTIC_URL")
 ELASTIC_API_KEY = os.environ.get("ELASTIC_API_KEY")
+SCENARIO = os.environ.get("SCENARIO", "A").upper()
 
 if not ELASTIC_URL or not ELASTIC_API_KEY:
     print("ERROR: ELASTIC_URL or ELASTIC_API_KEY missing in .env")
@@ -32,7 +33,10 @@ def seed_elastic():
     print(f"Creating index '{index_name}'...")
     es.indices.create(index=index_name)
 
-    fixtures_path = os.path.join(os.path.dirname(__file__), '..', 'fixtures', 'scenario_a_logs.json')
+    fixture_file = f'scenario_{SCENARIO.lower()}_logs.json'
+    fixtures_path = os.path.join(os.path.dirname(__file__), '..', 'fixtures', fixture_file)
+    
+    print(f"Loading fixtures from {fixture_file}...")
     with open(fixtures_path, 'r') as f:
         logs = json.load(f)
 

@@ -1,0 +1,38 @@
+[
+  {
+    "timestamp": "2024-06-11T14:10:00Z",
+    "service": "gitlab-ci",
+    "level": "INFO",
+    "message": "Deployment event: inventory-service tagged with v3.0.0"
+  },
+  {
+    "timestamp": "2024-06-11T14:15:00Z",
+    "service": "inventory-service",
+    "level": "WARN",
+    "message": "Redis cache miss rate increased to 80%"
+  },
+  {
+    "timestamp": "2024-06-11T14:16:00Z",
+    "service": "inventory-service",
+    "level": "ERROR",
+    "message": "RedisTimeoutError: Command timed out after 5 seconds"
+  },
+  {
+    "timestamp": "2024-06-11T14:17:00Z",
+    "service": "inventory-service",
+    "level": "WARN",
+    "message": "Falling back to primary database. DB load spiking."
+  },
+  {
+    "timestamp": "2024-06-11T14:18:00Z",
+    "service": "checkout-api",
+    "level": "ERROR",
+    "message": "Upstream timeout: inventory-service failed to respond within 8000ms"
+  },
+  {
+    "timestamp": "2024-06-11T14:19:00Z",
+    "service": "api-gateway",
+    "level": "CRITICAL",
+    "message": "Global error rate spike: 42% of requests failing (baseline 0.2%)"
+  }
+]
