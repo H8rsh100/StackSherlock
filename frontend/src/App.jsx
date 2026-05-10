@@ -18,8 +18,9 @@ const initialEdges = [
   { id: 'e4-5', source: '4', target: '5', animated: true, style: { stroke: '#ef4444' } },
 ];
 
-export default function App() {
   const [feed, setFeed] = useState([]);
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
 
   useEffect(() => {
     const eventSource = new EventSource('http://localhost:8000/incident/INC-2024-047/stream');
@@ -31,6 +32,38 @@ export default function App() {
 
     return () => {
       eventSource.close();
+    };
+  }, []);
+
+  // Animate the causal graph
+  useEffect(() => {
+    let timeoutId;
+    let isSubscribed = true;
+    
+    const animateGraph = async () => {
+      // Small delay before starting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      for (let i = 0; i < initialNodes.length; i++) {
+        if (!isSubscribed) break;
+        
+        setNodes(prev => [...prev, initialNodes[i]]);
+        if (i > 0) {
+          setEdges(prev => [...prev, initialEdges[i - 1]]);
+        }
+        
+        // Wait 1.5s before adding the next node
+        await new Promise(resolve => {
+          timeoutId = setTimeout(resolve, 1500);
+        });
+      }
+    };
+    
+    animateGraph();
+    
+    return () => {
+      isSubscribed = false;
+      clearTimeout(timeoutId);
     };
   }, []);
 
@@ -99,7 +132,7 @@ export default function App() {
 
         {/* Center Panel: Causal Graph */}
         <main className="flex-1 relative bg-slate-950 border-r border-slate-800">
-          <ReactFlow nodes={initialNodes} edges={initialEdges} fitView className="dark">
+          <ReactFlow nodes={nodes} edges={edges} fitView className="dark">
             <Background color="#334155" gap={16} />
             <Controls className="bg-slate-800 fill-slate-200 border-slate-700" />
           </ReactFlow>
