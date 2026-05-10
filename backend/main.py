@@ -87,6 +87,12 @@ async def get_blast_radius(id: str):
         "revenue_loss_per_hour": 14200
     }
 
+import sys
+import os
+
+# Add the project root to sys.path so we can import the agent package when running from inside the backend directory
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from agent.gitlab_mcp import execute_rollback
 
 @app.post("/approval/approve/{id}")

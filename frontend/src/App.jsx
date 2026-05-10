@@ -18,6 +18,7 @@ const initialEdges = [
   { id: 'e4-5', source: '4', target: '5', animated: true, style: { stroke: '#ef4444' } },
 ];
 
+export default function App() {
   const [feed, setFeed] = useState([]);
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
