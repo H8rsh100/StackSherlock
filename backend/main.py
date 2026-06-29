@@ -272,3 +272,66 @@ async def get_playbook(pattern: str):
             ]
         }
 
+@app.get("/agent/audit/{id}")
+async def get_incident_audit(id: str):
+    scenario = active_incident["scenario"]
+    if scenario == "A":
+        return {
+            "incident_id": id,
+            "git_diff": """diff --git a/auth-service/config.go b/auth-service/config.go
+index a4f2f9b..b2c3d4e 100644
+--- a/auth-service/config.go
++++ b/auth-service/config.go
+@@ -10,7 +10,7 @@ type DBConfig struct {
+ 
+ func LoadConfig() DBConfig {
+ 	return DBConfig{
+-		MaxConnections: 100,
++		MaxConnections: 10, // Optimize database resources
+ 		TimeoutSeconds: 30,
+ 	}
+ }""",
+            "claude_risk_assessment": {
+                "risk_level": "CRITICAL",
+                "summary": "Database pool constriction triggers immediate connection exhaustion under standard load, cascading failure into checkout-api.",
+                "analysis": "Reducing MaxConnections from 100 to 10 limits the auth-service container to a maximum of 10 parallel database connections. Peak auth traffic requires ~45 connections. This causes requests to wait and eventually time out, cascading database pool exhaustion down to checkout-api."
+            },
+            "mongodb_precedents": [
+                {
+                    "incident_id": "INC-2024-019",
+                    "date": "2024-03-14",
+                    "scenario": "DB Exhaustion",
+                    "resolution": "Rollback auth-service deployment to restore pool limit. Database pool limits stabilized checkout-api latencies immediately."
+                }
+            ]
+        }
+    else:
+        return {
+            "incident_id": id,
+            "git_diff": """diff --git a/inventory-service/redis_client.py b/inventory-service/redis_client.py
+index e83d1c1..f92d4b2 100644
+--- a/inventory-service/redis_client.py
++++ b/inventory-service/redis_client.py
+@@ -5,5 +5,5 @@ class RedisConfig:
+     def __init__(self):
+         self.host = "redis-primary"
+         self.port = 6379
+-        self.timeout = 2.0
++        self.timeout = 0.1 # Minimize blocking operations
+         self.retries = 3""",
+            "claude_risk_assessment": {
+                "risk_level": "HIGH",
+                "summary": "Redis cache connection timeout is too aggressive, resulting in persistent timeouts under transient latency fluctuations.",
+                "analysis": "Setting the socket timeout to 100ms (0.1s) does not allow enough headroom for normal network jitter or heavy cache lookups. When Redis fails to respond within 100ms, inventory-service falls back to query the primary database. The database CPU immediately spikes to 100% under the un-cached query volume, crashing the checkout-api."
+            },
+            "mongodb_precedents": [
+                {
+                    "incident_id": "INC-2024-033",
+                    "date": "2024-05-02",
+                    "scenario": "Redis Cache Cascade",
+                    "resolution": "Rollback inventory-service and revert connection timeout to 2.0s. CPU load on primary database normalized within 2 minutes."
+                }
+            ]
+        }
+
+
