@@ -45,6 +45,8 @@ export default function App() {
   const [confidenceData, setConfidenceData] = useState(null);
   const [playbookData, setPlaybookData] = useState(null);
   const [approvalStatus, setApprovalStatus] = useState('idle'); // idle, validating, resolved
+  const [arizeData, setArizeData] = useState(null);
+  const intervalRef = React.useRef(null);
 
   const fetchIncidentData = async (incId) => {
     try {
@@ -69,11 +71,16 @@ export default function App() {
   };
 
   const handleScenarioChange = async (newScenario) => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setScenario(newScenario);
     setFeed([]);
     setNodes([]);
     setEdges([]);
     setApprovalStatus('idle');
+    setArizeData(null);
     
     try {
       const res = await fetch('http://localhost:8000/incident/trigger', {
@@ -90,8 +97,52 @@ export default function App() {
     }
   };
 
+  const handleApprove = async () => {
+    setApprovalStatus('validating');
+    try {
+      const res = await fetch(`http://localhost:8000/approval/approve/${incidentId}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      console.log("Approval executed:", data);
+      
+      startValidationPolling();
+    } catch (e) {
+      console.error("Error executing approval:", e);
+    }
+  };
+
+  const startValidationPolling = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    
+    intervalRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/arize/status/${incidentId}`);
+        const data = await res.json();
+        setArizeData(data);
+        
+        if (data.incident_closed) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+          setApprovalStatus('resolved');
+          // Hit the memory learn endpoint
+          await fetch(`http://localhost:8000/memory/learn/${incidentId}`, {
+            method: 'POST'
+          });
+        }
+      } catch (e) {
+        console.error("Error polling Arize status:", e);
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }, 2000);
+  };
+
   useEffect(() => {
     handleScenarioChange('A');
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, []);
 
   // Set up EventSource for Live SRE stream
@@ -347,14 +398,56 @@ export default function App() {
               })}
             </ul>
           </div>
-          <div className="flex space-x-4 mb-2">
-            <button className="px-6 py-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 flex items-center text-sm font-semibold tracking-wide">
-              WHY SHOULD I TRUST THIS?
-            </button>
-            <button className="px-8 py-2.5 rounded bg-green-600 hover:bg-green-500 text-white font-bold transition-all shadow-[0_0_15px_rgba(22,163,74,0.4)] hover:shadow-[0_0_25px_rgba(22,163,74,0.6)] flex items-center tracking-wide">
-              <GitCommit className="w-5 h-5 mr-2" /> APPROVE & EXECUTE
-            </button>
-          </div>
+          
+          {approvalStatus === 'idle' && (
+            <div className="flex space-x-4 mb-2">
+              <button className="px-6 py-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 flex items-center text-sm font-semibold tracking-wide cursor-pointer">
+                WHY SHOULD I TRUST THIS?
+              </button>
+              <button 
+                onClick={handleApprove}
+                className="px-8 py-2.5 rounded bg-green-600 hover:bg-green-500 text-white font-bold transition-all shadow-[0_0_15px_rgba(22,163,74,0.4)] hover:shadow-[0_0_25px_rgba(22,163,74,0.6)] flex items-center tracking-wide cursor-pointer"
+              >
+                <GitCommit className="w-5 h-5 mr-2" /> APPROVE & EXECUTE
+              </button>
+            </div>
+          )}
+
+          {approvalStatus === 'validating' && arizeData && (
+            <div className="bg-slate-800/80 border border-yellow-500/50 rounded-lg p-4 mb-2 flex items-center space-x-6 w-[450px] shadow-[0_0_15px_rgba(234,179,8,0.15)] animate-pulse">
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-ping"></div>
+              <div className="flex-1">
+                <div className="text-xs text-yellow-500 uppercase tracking-wider font-semibold">Post-Fix Validation Loop</div>
+                <div className="text-sm text-slate-200 mt-1 flex justify-between font-mono">
+                  <span>Error Rate:</span>
+                  <span className="text-yellow-400 font-bold">{arizeData.post_fix_error_rate}%</span>
+                  <span className="text-slate-500">→</span>
+                  <span className="text-green-400">baseline &lt; 2.0%</span>
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1">
+                  Stability held: {arizeData.baseline_held_seconds}s / 60s
+                </div>
+                <div className="w-full bg-slate-900 rounded-full h-1.5 mt-2 overflow-hidden">
+                  <div 
+                    className="bg-yellow-500 h-1.5 transition-all duration-500" 
+                    style={{ width: `${(arizeData.baseline_held_seconds / 60) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {approvalStatus === 'resolved' && (
+            <div className="bg-green-950/40 border border-green-500/50 rounded-lg p-4 mb-2 flex items-center space-x-4 w-[450px] shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+              <CheckCircle className="text-green-500 w-8 h-8 flex-shrink-0 animate-bounce" />
+              <div>
+                <div className="text-xs text-green-400 uppercase tracking-wider font-bold tracking-wider">✓ INCIDENT RESOLVED & LEARNED</div>
+                <div className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  Telemetry stabilized below baseline for 60s. Rollback successful and learned memory stored in MongoDB.
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </footer>
     </div>
