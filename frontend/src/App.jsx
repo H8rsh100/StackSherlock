@@ -486,72 +486,72 @@ export default function App() {
 
       {/* Modal Overlay */}
       {isModalOpen && auditData && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900/95 border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden">
             
             {/* Modal Header */}
-            <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
-              <div className="flex items-center space-x-2.5">
-                <span className="p-1.5 rounded bg-blue-900/30 text-blue-400">
+            <div className="p-5 border-b border-slate-800/80 flex items-center justify-between bg-slate-950/70">
+              <div className="flex items-center space-x-3">
+                <span className="p-2 rounded-xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-400">
                   <GitCommit className="w-5 h-5" />
                 </span>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-100">Why should I trust this recommendation?</h3>
-                  <p className="text-xs text-slate-400">Audited parameters for Incident {incidentId}</p>
+                  <h3 className="font-bold text-base text-slate-100 tracking-wide">Why should I trust this recommendation?</h3>
+                  <p className="text-xs text-slate-400 font-mono">Audited multi-agent verification parameters for Incident {incidentId}</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-200 hover:bg-slate-800 p-2 rounded-lg transition-colors cursor-pointer text-sm font-semibold"
+                className="text-slate-400 hover:text-slate-100 hover:bg-slate-800 p-2 rounded-xl transition-all cursor-pointer text-sm font-bold border border-transparent hover:border-slate-700"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Tabs */}
-            <div className="flex border-b border-slate-800 bg-slate-950/40">
+            <div className="flex border-b border-slate-800/80 bg-slate-950/50 p-1.5 space-x-2">
               <button 
                 onClick={() => setActiveTab('diff')}
-                className={`flex-1 py-3 text-xs font-semibold tracking-wider uppercase border-b-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 text-xs font-bold tracking-wider uppercase rounded-xl transition-all cursor-pointer ${
                   activeTab === 'diff' 
-                    ? 'border-blue-500 text-blue-400 bg-slate-800/30' 
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'bg-cyan-950/90 text-cyan-400 border border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.2)]' 
+                    : 'text-slate-400 hover:text-slate-200 border border-transparent'
                 }`}
               >
-                Git Diff
+                Git Diff Audit
               </button>
               <button 
                 onClick={() => setActiveTab('risk')}
-                className={`flex-1 py-3 text-xs font-semibold tracking-wider uppercase border-b-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 text-xs font-bold tracking-wider uppercase rounded-xl transition-all cursor-pointer ${
                   activeTab === 'risk' 
-                    ? 'border-red-500 text-red-400 bg-slate-800/30' 
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'bg-rose-950/90 text-rose-400 border border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.2)]' 
+                    : 'text-slate-400 hover:text-slate-200 border border-transparent'
                 }`}
               >
-                Risk Assessment
+                Claude Risk Report
               </button>
               <button 
                 onClick={() => setActiveTab('precedents')}
-                className={`flex-1 py-3 text-xs font-semibold tracking-wider uppercase border-b-2 transition-all cursor-pointer ${
+                className={`flex-1 py-2.5 text-xs font-bold tracking-wider uppercase rounded-xl transition-all cursor-pointer ${
                   activeTab === 'precedents' 
-                    ? 'border-purple-500 text-purple-400 bg-slate-800/30' 
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'bg-purple-950/90 text-purple-400 border border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.2)]' 
+                    : 'text-slate-400 hover:text-slate-200 border border-transparent'
                 }`}
               >
-                Historical Precedents
+                MongoDB Memory
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 overflow-y-auto flex-1 bg-slate-900/20 text-sm">
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-950/40 text-sm">
               
               {/* Tab 1: Git Diff */}
               {activeTab === 'diff' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="text-xs text-slate-400 font-medium">
-                    Suspicious code changes identified in deployment commit:
+                    Suspicious code changes identified in deployment commit diff:
                   </div>
-                  <pre className="p-4 bg-slate-950 border border-slate-800 rounded-lg overflow-x-auto text-xs font-mono text-slate-300 leading-relaxed max-h-[40vh]">
+                  <pre className="p-4 bg-slate-950 border border-slate-800/80 rounded-xl overflow-x-auto text-xs font-mono text-cyan-300 leading-relaxed max-h-[40vh] shadow-inner">
                     <code>{auditData.git_diff}</code>
                   </pre>
                 </div>
@@ -561,45 +561,45 @@ export default function App() {
               {activeTab === 'risk' && auditData.claude_risk_assessment && (
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 mb-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Risk Severity:</span>
-                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Risk Severity Rating:</span>
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${
                       auditData.claude_risk_assessment.risk_level === 'CRITICAL'
-                        ? 'bg-red-950 text-red-400 border border-red-500/30'
-                        : 'bg-yellow-950 text-yellow-400 border border-yellow-500/30'
+                        ? 'bg-rose-950 text-rose-400 border border-rose-500/40 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
+                        : 'bg-amber-950 text-amber-400 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.3)]'
                     }`}>
                       {auditData.claude_risk_assessment.risk_level}
                     </span>
                   </div>
-                  <div className="p-4 bg-slate-950 border border-slate-800/50 rounded-lg mb-3">
-                    <div className="font-semibold text-slate-200 mb-2">Claude SRE Summary</div>
-                    <p className="text-slate-300 text-xs leading-relaxed">{auditData.claude_risk_assessment.summary}</p>
+                  <div className="p-4 bg-slate-950/80 border border-slate-800/80 rounded-xl">
+                    <div className="font-bold text-slate-200 text-xs uppercase tracking-wider mb-2 text-rose-400">Claude SRE Summary</div>
+                    <p className="text-slate-300 text-xs leading-relaxed font-sans">{auditData.claude_risk_assessment.summary}</p>
                   </div>
-                  <div className="p-4 bg-slate-950 border border-slate-800/50 rounded-lg">
-                    <div className="font-semibold text-slate-200 mb-2">Impact Analysis</div>
-                    <p className="text-slate-300 text-xs leading-relaxed">{auditData.claude_risk_assessment.analysis}</p>
+                  <div className="p-4 bg-slate-950/80 border border-slate-800/80 rounded-xl">
+                    <div className="font-bold text-slate-200 text-xs uppercase tracking-wider mb-2 text-rose-400">Impact Analysis</div>
+                    <p className="text-slate-300 text-xs leading-relaxed font-sans">{auditData.claude_risk_assessment.analysis}</p>
                   </div>
                 </div>
               )}
 
               {/* Tab 3: Historical Precedents */}
               {activeTab === 'precedents' && auditData.mongodb_precedents && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="text-xs text-slate-400 font-medium mb-2">
-                    MongoDB matched historical incident logs:
+                    MongoDB learned memory matches:
                   </div>
                   {auditData.mongodb_precedents.map((prec, idx) => (
-                    <div key={idx} className="p-4 bg-slate-950 border border-slate-800 rounded-lg space-y-2">
-                      <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <span className="font-semibold text-purple-400 font-mono">{prec.incident_id}</span>
-                        <span className="text-xs text-slate-500">{prec.date}</span>
+                    <div key={idx} className="p-4 bg-slate-950/80 border border-purple-900/40 rounded-xl space-y-2.5 shadow-[0_0_15px_rgba(168,85,247,0.08)]">
+                      <div className="flex justify-between items-center border-b border-slate-800/80 pb-2">
+                        <span className="font-bold text-purple-400 font-mono text-xs">{prec.incident_id}</span>
+                        <span className="text-[10px] text-slate-500 font-mono">{prec.date}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-xs pt-1">
                         <div>
-                          <span className="text-slate-500 block">Scenario Type:</span>
+                          <span className="text-slate-500 text-[10px] block font-bold uppercase">Scenario Type</span>
                           <span className="text-slate-300 font-semibold">{prec.scenario}</span>
                         </div>
                         <div>
-                          <span className="text-slate-500 block">Resolution Action:</span>
+                          <span className="text-slate-500 text-[10px] block font-bold uppercase">Resolution Action</span>
                           <span className="text-slate-300 font-semibold">{prec.resolution}</span>
                         </div>
                       </div>
@@ -610,10 +610,10 @@ export default function App() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-800 bg-slate-950/40 flex justify-end">
+            <div className="p-4 border-t border-slate-800/80 bg-slate-950/70 flex justify-end">
               <button 
                 onClick={() => setIsModalOpen(false)}
-                className="px-5 py-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer transition-colors border border-slate-700"
+                className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold cursor-pointer transition-all border border-slate-700 hover:border-slate-600"
               >
                 Close Audit Report
               </button>
