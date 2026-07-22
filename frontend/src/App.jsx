@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ReactFlow, Background, Controls } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { AlertCircle, CheckCircle, Activity, GitCommit } from 'lucide-react';
+import './App.css';
+import { AlertCircle, CheckCircle, Activity, GitCommit, ShieldAlert, Cpu, Terminal, Layers } from 'lucide-react';
 
 const scenarioANodes = [
   { id: '1', position: { x: 250, y: 50 }, data: { label: 'Deployment v2.3.1' }, style: { backgroundColor: '#1e293b', color: '#cbd5e1', border: '1px solid #334155', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' } },
@@ -46,7 +47,8 @@ export default function App() {
   const [playbookData, setPlaybookData] = useState(null);
   const [approvalStatus, setApprovalStatus] = useState('idle'); // idle, validating, resolved
   const [arizeData, setArizeData] = useState(null);
-  const intervalRef = React.useRef(null);
+  const intervalRef = useRef(null);
+  const feedEndRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [auditData, setAuditData] = useState(null);
@@ -136,7 +138,6 @@ export default function App() {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
           setApprovalStatus('resolved');
-          // Hit the memory learn endpoint
           await fetch(`http://localhost:8000/memory/learn/${incidentId}`, {
             method: 'POST'
           });
@@ -156,7 +157,6 @@ export default function App() {
     };
   }, []);
 
-  // Set up EventSource for Live SRE stream
   useEffect(() => {
     if (!incidentId) return;
 
@@ -172,7 +172,6 @@ export default function App() {
     };
   }, [incidentId]);
 
-  // Animate the causal graph
   useEffect(() => {
     let timeoutId;
     let isSubscribed = true;
@@ -184,7 +183,6 @@ export default function App() {
     setEdges([]);
     
     const animateGraph = async () => {
-      // Small delay before starting
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       for (let i = 0; i < currentNodes.length; i++) {
@@ -195,7 +193,6 @@ export default function App() {
           setEdges(prev => [...prev, currentEdges[i - 1]]);
         }
         
-        // Wait 1.2s before adding the next node
         await new Promise(resolve => {
           timeoutId = setTimeout(resolve, 1200);
         });
@@ -212,78 +209,101 @@ export default function App() {
 
   const getFeedColor = (type) => {
     switch(type) {
-      case 'investigating': return 'text-blue-400';
-      case 'reasoning': return 'text-yellow-400';
-      case 'resolved': return 'text-green-400';
-      case 'alert': return 'text-red-400';
-      default: return 'text-slate-400';
+      case 'investigating': return 'text-sky-400 border-sky-500/30 bg-sky-950/40';
+      case 'reasoning': return 'text-amber-400 border-amber-500/30 bg-amber-950/40';
+      case 'resolved': return 'text-emerald-400 border-emerald-500/30 bg-emerald-950/40';
+      case 'alert': return 'text-rose-400 border-rose-500/30 bg-rose-950/40';
+      default: return 'text-slate-400 border-slate-700 bg-slate-800/40';
     }
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-slate-950 text-slate-200 overflow-hidden font-sans">
+    <div className="h-screen w-screen flex flex-col bg-slate-950 text-slate-100 overflow-hidden font-sans">
       
-      {/* Top Bar: Blast Radius Panel */}
-      <header className="bg-red-950/40 backdrop-blur-md border-b border-red-900/50 p-4 flex items-center justify-between z-10 shadow-lg">
-        <div className="flex items-center space-x-3">
-          <AlertCircle className="text-red-500 animate-pulse w-6 h-6" />
-          <h1 className="text-xl font-bold text-red-500 tracking-wide mr-4">⚠ INCIDENT DETECTED</h1>
-          <select 
-            value={scenario} 
-            onChange={(e) => handleScenarioChange(e.target.value)} 
-            className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-3 py-1.5 font-semibold focus:outline-none focus:border-red-500 cursor-pointer shadow-md"
-          >
-            <option value="A">Scenario A: Auth DB Exhaustion</option>
-            <option value="B">Scenario B: Redis Timeout Cascade</option>
-          </select>
+      {/* Top Command Header with Telemetry */}
+      <header className="bg-slate-900/90 backdrop-blur-xl border-b border-red-900/40 px-6 py-3.5 flex items-center justify-between z-20 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 bg-red-950/80 border border-red-500/40 px-3 py-1.5 rounded-lg shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse-glow-red">
+            <ShieldAlert className="text-red-500 w-5 h-5 animate-pulse" />
+            <span className="text-xs font-extrabold text-red-400 tracking-wider uppercase">P1 CRITICAL INCIDENT</span>
+          </div>
+
+          <div className="h-6 w-px bg-slate-800"></div>
+
+          <div className="flex items-center space-x-2">
+            <span className="text-xs text-slate-400 font-medium">Scenario:</span>
+            <select 
+              value={scenario} 
+              onChange={(e) => handleScenarioChange(e.target.value)} 
+              className="bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-1.5 font-semibold focus:outline-none focus:border-cyan-500 cursor-pointer shadow-inner transition-all hover:border-slate-600"
+            >
+              <option value="A">Scenario A: Auth DB Exhaustion</option>
+              <option value="B">Scenario B: Redis Timeout Cascade</option>
+            </select>
+          </div>
         </div>
+
         {blastRadius && (
-          <div className="flex space-x-8 text-sm">
-            <div className="flex flex-col">
-              <span className="text-slate-400 text-xs uppercase tracking-wider">Affected Services</span>
-              <span className="font-semibold text-red-300">
+          <div className="flex items-center space-x-6 text-xs">
+            <div className="flex flex-col bg-slate-950/60 border border-slate-800/80 px-3.5 py-1.5 rounded-lg">
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-0.5">Affected Services</span>
+              <span className="font-semibold text-rose-300 font-mono">
                 {blastRadius.services ? blastRadius.services.join(', ') : 'auth-service, checkout-api'}
               </span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-slate-400 text-xs uppercase tracking-wider">Estimated Users Impacted</span>
-              <span className="font-semibold text-yellow-300">{blastRadius.estimated_users.toLocaleString()}</span>
+            <div className="flex flex-col bg-slate-950/60 border border-slate-800/80 px-3.5 py-1.5 rounded-lg">
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-0.5">Impacted Users</span>
+              <span className="font-bold text-amber-400 font-mono">{blastRadius.estimated_users.toLocaleString()}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-slate-400 text-xs uppercase tracking-wider">Revenue Loss</span>
-              <span className="font-semibold text-red-400">${blastRadius.revenue_loss_per_hour.toLocaleString()}/hour</span>
+            <div className="flex flex-col bg-slate-950/60 border border-slate-800/80 px-3.5 py-1.5 rounded-lg">
+              <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-0.5">Revenue Loss</span>
+              <span className="font-bold text-rose-400 font-mono">${blastRadius.revenue_loss_per_hour.toLocaleString()}/hr</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-slate-400 text-xs uppercase tracking-wider">Severity</span>
-              <span className="font-bold text-red-500 border border-red-500/50 px-2 rounded bg-red-950/50">{blastRadius.severity || 'P1'}</span>
+            <div className="flex items-center space-x-2 bg-red-900/30 border border-red-700/50 px-3 py-2 rounded-lg">
+              <span className="text-[10px] text-red-300 font-bold uppercase tracking-wider">SEV</span>
+              <span className="font-extrabold text-red-400 text-sm font-mono">{blastRadius.severity || 'P1'}</span>
             </div>
           </div>
         )}
       </header>
 
-      {/* Main Content Area */}
+      {/* Main Grid Content */}
       <div className="flex-1 flex overflow-hidden">
         
-        {/* Left Panel: Incident Feed */}
-        <aside className="w-[350px] border-r border-slate-800/50 bg-slate-900/60 backdrop-blur-xl flex flex-col z-10 shadow-[4px_0_24px_rgba(0,0,0,0.2)]">
-          <div className="p-4 border-b border-slate-800/50 bg-slate-900/80">
-            <h2 className="font-semibold flex items-center text-slate-300"><Activity className="w-4 h-4 mr-2 text-blue-400" /> Live Agent Feed</h2>
+        {/* Left Panel: Live SRE Agent Feed */}
+        <aside className="w-[360px] border-r border-slate-800/80 bg-slate-900/60 backdrop-blur-2xl flex flex-col z-10 shadow-[4px_0_24px_rgba(0,0,0,0.3)]">
+          <div className="px-4 py-3.5 border-b border-slate-800/80 bg-slate-950/70 flex items-center justify-between">
+            <h2 className="font-bold flex items-center text-slate-200 text-xs tracking-wider uppercase">
+              <Terminal className="w-4 h-4 mr-2 text-cyan-400" /> Live Telemetry Feed
+            </h2>
+            <span className="flex items-center text-[10px] bg-cyan-950/80 text-cyan-400 border border-cyan-700/40 px-2 py-0.5 rounded-full font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping mr-1.5"></span> LIVE
+            </span>
           </div>
-          <div className="p-4 space-y-4 overflow-y-auto flex-1 font-mono text-sm">
+
+          <div className="p-4 space-y-3 overflow-y-auto flex-1 font-mono text-xs terminal-scanline">
             {feed.length === 0 ? (
-              <div className="text-slate-500 text-xs italic">Waiting for agent stream...</div>
+              <div className="text-slate-500 text-xs italic flex items-center space-x-2">
+                <Cpu className="w-4 h-4 animate-spin text-cyan-500" />
+                <span>Connecting to Gemini agent stream...</span>
+              </div>
             ) : (
               feed.map((item, idx) => (
-                <div key={idx} className="flex flex-col space-y-1">
-                  <span className="text-slate-500 text-xs">{item.timestamp}</span>
-                  <span className={getFeedColor(item.type)}>
-                    [{item.type.charAt(0).toUpperCase() + item.type.slice(1)}] {item.message}
-                  </span>
+                <div key={idx} className="flex flex-col space-y-1.5 bg-slate-950/70 border border-slate-800/60 p-2.5 rounded-lg animate-fade-in-up">
+                  <div className="flex items-center justify-between text-[10px] text-slate-500">
+                    <span>{item.timestamp}</span>
+                    <span className={`px-1.5 py-0.5 rounded border uppercase text-[9px] font-bold ${getFeedColor(item.type)}`}>
+                      {item.type}
+                    </span>
+                  </div>
+                  <p className="text-slate-300 leading-relaxed font-sans text-xs">{item.message}</p>
                 </div>
               ))
             )}
+            <div ref={feedEndRef} />
           </div>
         </aside>
+
 
         {/* Center Panel: Causal Graph */}
         <main className="flex-1 relative bg-slate-950 border-r border-slate-800">
