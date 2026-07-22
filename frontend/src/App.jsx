@@ -5,33 +5,33 @@ import './App.css';
 import { AlertCircle, CheckCircle, Activity, GitCommit, ShieldAlert, Cpu, Terminal, Layers } from 'lucide-react';
 
 const scenarioANodes = [
-  { id: '1', position: { x: 250, y: 50 }, data: { label: 'Deployment v2.3.1' }, style: { backgroundColor: '#1e293b', color: '#cbd5e1', border: '1px solid #334155', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' } },
-  { id: '2', position: { x: 250, y: 150 }, data: { label: 'Connection Pool Misconfigured' }, style: { backgroundColor: '#7c2d12', color: '#fed7aa', border: '1px solid #9a3412', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(234, 88, 12, 0.2)' } },
-  { id: '3', position: { x: 250, y: 250 }, data: { label: 'DB Connections Exhausted' }, style: { backgroundColor: '#7f1d1d', color: '#fca5a5', border: '1px solid #b91c1c', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(220, 38, 38, 0.3)' } },
-  { id: '4', position: { x: 250, y: 350 }, data: { label: 'Auth Service Latency +840ms' }, style: { backgroundColor: '#7f1d1d', color: '#fca5a5', border: '1px solid #b91c1c', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(220, 38, 38, 0.3)' } },
-  { id: '5', position: { x: 250, y: 450 }, data: { label: 'Checkout API Timeouts' }, style: { backgroundColor: '#991b1b', color: '#fef2f2', border: '1px solid #dc2626', padding: '12px', borderRadius: '8px', boxShadow: '0 0 20px rgba(220, 38, 38, 0.6)' } },
+  { id: '1', position: { x: 260, y: 40 }, data: { label: '🚀 Deployment v2.3.1 (GitLab MR #402)' }, style: { backgroundColor: '#0f172a', color: '#e2e8f0', border: '1px solid #38bdf8', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 0 20px rgba(56, 189, 248, 0.25)', fontWeight: '600', fontSize: '13px' } },
+  { id: '2', position: { x: 260, y: 140 }, data: { label: '⚙️ Connection Pool Misconfigured' }, style: { backgroundColor: '#451a03', color: '#fed7aa', border: '1px solid #f97316', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 0 22px rgba(249, 115, 22, 0.35)', fontWeight: '600', fontSize: '13px' } },
+  { id: '3', position: { x: 260, y: 240 }, data: { label: '🔥 DB Connections Exhausted (Max 100/100)' }, style: { backgroundColor: '#450a0a', color: '#fca5a5', border: '1px solid #ef4444', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 0 25px rgba(239, 68, 68, 0.45)', fontWeight: '700', fontSize: '13px' } },
+  { id: '4', position: { x: 260, y: 340 }, data: { label: '⚠️ Auth Service Latency Spiked +840ms' }, style: { backgroundColor: '#450a0a', color: '#fca5a5', border: '1px solid #f43f5e', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 0 25px rgba(244, 63, 94, 0.45)', fontWeight: '600', fontSize: '13px' } },
+  { id: '5', position: { x: 260, y: 440 }, data: { label: '🚨 Checkout API 504 Gateway Timeouts' }, style: { backgroundColor: '#7f1d1d', color: '#ffffff', border: '2px solid #dc2626', padding: '16px 20px', borderRadius: '14px', boxShadow: '0 0 35px rgba(220, 38, 38, 0.75)', fontWeight: '800', fontSize: '14px' } },
 ];
 
 const scenarioAEdges = [
-  { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#94a3b8' } },
-  { id: 'e2-3', source: '2', target: '3', animated: true, style: { stroke: '#ef4444' } },
-  { id: 'e3-4', source: '3', target: '4', animated: true, style: { stroke: '#ef4444' } },
-  { id: 'e4-5', source: '4', target: '5', animated: true, style: { stroke: '#ef4444' } },
+  { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#38bdf8', strokeWidth: 2 } },
+  { id: 'e2-3', source: '2', target: '3', animated: true, style: { stroke: '#f97316', strokeWidth: 2.5 } },
+  { id: 'e3-4', source: '3', target: '4', animated: true, style: { stroke: '#ef4444', strokeWidth: 2.5 } },
+  { id: 'e4-5', source: '4', target: '5', animated: true, style: { stroke: '#dc2626', strokeWidth: 3 } },
 ];
 
 const scenarioBNodes = [
-  { id: '1', position: { x: 250, y: 50 }, data: { label: 'Deployment v3.0.0' }, style: { backgroundColor: '#1e293b', color: '#cbd5e1', border: '1px solid #334155', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' } },
-  { id: '2', position: { x: 250, y: 150 }, data: { label: 'Redis Cache Miss Rate 80%' }, style: { backgroundColor: '#7c2d12', color: '#fed7aa', border: '1px solid #9a3412', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(234, 88, 12, 0.2)' } },
-  { id: '3', position: { x: 250, y: 250 }, data: { label: 'RedisTimeoutError' }, style: { backgroundColor: '#7f1d1d', color: '#fca5a5', border: '1px solid #b91c1c', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(220, 38, 38, 0.3)' } },
-  { id: '4', position: { x: 250, y: 350 }, data: { label: 'Fallback to Primary DB CPU 100%' }, style: { backgroundColor: '#7f1d1d', color: '#fca5a5', border: '1px solid #b91c1c', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(220, 38, 38, 0.3)' } },
-  { id: '5', position: { x: 250, y: 450 }, data: { label: 'Checkout API Timeouts' }, style: { backgroundColor: '#991b1b', color: '#fef2f2', border: '1px solid #dc2626', padding: '12px', borderRadius: '8px', boxShadow: '0 0 20px rgba(220, 38, 38, 0.6)' } },
+  { id: '1', position: { x: 260, y: 40 }, data: { label: '🚀 Deployment v3.0.0 (GitLab MR #512)' }, style: { backgroundColor: '#0f172a', color: '#e2e8f0', border: '1px solid #38bdf8', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 0 20px rgba(56, 189, 248, 0.25)', fontWeight: '600', fontSize: '13px' } },
+  { id: '2', position: { x: 260, y: 140 }, data: { label: '⚡ Redis Cache Miss Rate 80%' }, style: { backgroundColor: '#451a03', color: '#fed7aa', border: '1px solid #f97316', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 0 22px rgba(249, 115, 22, 0.35)', fontWeight: '600', fontSize: '13px' } },
+  { id: '3', position: { x: 260, y: 240 }, data: { label: '💥 RedisTimeoutError (Cluster Unresponsive)' }, style: { backgroundColor: '#450a0a', color: '#fca5a5', border: '1px solid #ef4444', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 0 25px rgba(239, 68, 68, 0.45)', fontWeight: '700', fontSize: '13px' } },
+  { id: '4', position: { x: 260, y: 340 }, data: { label: '📈 Fallback DB CPU Saturation 100%' }, style: { backgroundColor: '#450a0a', color: '#fca5a5', border: '1px solid #f43f5e', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 0 25px rgba(244, 63, 94, 0.45)', fontWeight: '600', fontSize: '13px' } },
+  { id: '5', position: { x: 260, y: 440 }, data: { label: '🚨 Checkout API 504 Gateway Timeouts' }, style: { backgroundColor: '#7f1d1d', color: '#ffffff', border: '2px solid #dc2626', padding: '16px 20px', borderRadius: '14px', boxShadow: '0 0 35px rgba(220, 38, 38, 0.75)', fontWeight: '800', fontSize: '14px' } },
 ];
 
 const scenarioBEdges = [
-  { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#94a3b8' } },
-  { id: 'e2-3', source: '2', target: '3', animated: true, style: { stroke: '#ef4444' } },
-  { id: 'e3-4', source: '3', target: '4', animated: true, style: { stroke: '#ef4444' } },
-  { id: 'e4-5', source: '4', target: '5', animated: true, style: { stroke: '#ef4444' } },
+  { id: 'e1-2', source: '1', target: '2', animated: true, style: { stroke: '#38bdf8', strokeWidth: 2 } },
+  { id: 'e2-3', source: '2', target: '3', animated: true, style: { stroke: '#f97316', strokeWidth: 2.5 } },
+  { id: 'e3-4', source: '3', target: '4', animated: true, style: { stroke: '#ef4444', strokeWidth: 2.5 } },
+  { id: 'e4-5', source: '4', target: '5', animated: true, style: { stroke: '#dc2626', strokeWidth: 3 } },
 ];
 
 export default function App() {
