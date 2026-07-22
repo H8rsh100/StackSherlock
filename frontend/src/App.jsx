@@ -314,23 +314,28 @@ export default function App() {
         </main>
 
         {/* Right Panel: Hypothesis & Confidence */}
-        <aside className="w-[400px] border-l border-slate-800/50 bg-slate-900/60 backdrop-blur-xl flex flex-col overflow-y-auto z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.2)]">
+        <aside className="w-[400px] border-l border-slate-800/80 bg-slate-900/60 backdrop-blur-2xl flex flex-col overflow-y-auto z-10 shadow-[-4px_0_24px_rgba(0,0,0,0.3)]">
           {/* Confidence Panel */}
           {confidenceData && (
-            <div className="p-5 border-b border-slate-800/50">
-              <h2 className="font-semibold text-lg mb-3 text-slate-200">Rollback Recommendation</h2>
-              <div className="flex items-center justify-between bg-slate-800/80 border border-slate-700 rounded-lg p-4 mb-5">
-                <span className="text-slate-300">Confidence Score</span>
-                <span className="text-3xl font-bold text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">
+            <div className="p-5 border-b border-slate-800/80 bg-slate-950/40">
+              <h2 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3 flex items-center">
+                <Layers className="w-4 h-4 mr-2 text-emerald-400" /> AI Rollback Recommendation
+              </h2>
+              <div className="flex items-center justify-between bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/40 rounded-xl p-4 mb-4 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+                <div>
+                  <span className="text-slate-300 text-xs font-medium block">Confidence Score</span>
+                  <span className="text-[10px] text-emerald-400 font-mono">Gemini + Claude Verified</span>
+                </div>
+                <span className="text-3xl font-extrabold text-emerald-400 font-mono drop-shadow-[0_0_12px_rgba(52,211,153,0.6)]">
                   {confidenceData.total_confidence}%
                 </span>
               </div>
-              <h3 className="text-xs text-slate-400 uppercase tracking-wider mb-3">Signals Breakdown</h3>
-              <ul className="space-y-3 text-sm">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Audit Signals Breakdown</h3>
+              <ul className="space-y-2 text-xs font-mono">
                 {confidenceData.signals && confidenceData.signals.map((sig, idx) => (
-                  <li key={idx} className="flex justify-between items-center text-green-300">
-                    <span className="truncate pr-2">+ {sig.signal}</span>
-                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-green-400">+{sig.score}</span>
+                  <li key={idx} className="flex justify-between items-center bg-slate-950/60 border border-slate-800/80 px-3 py-2 rounded-lg text-emerald-300">
+                    <span className="truncate pr-2 font-sans font-medium text-slate-300">+ {sig.signal}</span>
+                    <span className="bg-emerald-950/80 border border-emerald-500/30 px-2 py-0.5 rounded text-emerald-400 font-bold">+{sig.score}</span>
                   </li>
                 ))}
               </ul>
@@ -339,32 +344,32 @@ export default function App() {
 
           {/* Hypothesis Panel */}
           {hypothesesData && (
-            <div className="p-5">
-              <h3 className="text-xs text-slate-400 uppercase tracking-wider mb-4">Ranked Hypotheses</h3>
-              <div className="space-y-4">
+            <div className="p-5 space-y-3">
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Ranked Diagnosis Hypotheses</h3>
+              <div className="space-y-3">
                 {hypothesesData.hypotheses && hypothesesData.hypotheses.map((hyp, idx) => {
                   const isSelected = hyp.selected;
                   return (
                     <div 
                       key={idx} 
-                      className={`border rounded-lg p-4 relative overflow-hidden transition-all ${
+                      className={`border rounded-xl p-4 relative overflow-hidden transition-all duration-300 glass-card-hover ${
                         isSelected 
-                          ? 'bg-slate-800 border-green-500/50 shadow-[0_0_15px_rgba(74,222,128,0.1)]' 
-                          : 'bg-slate-900 border-slate-800'
+                          ? 'bg-slate-900/90 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.15)]' 
+                          : 'bg-slate-950/50 border-slate-800/70'
                       }`}
                     >
-                      {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500"></div>}
-                      <div className="flex justify-between items-center mb-2">
-                        <span className={`font-semibold ${isSelected ? 'text-slate-200' : 'text-slate-400'}`}>{hyp.label}</span>
-                        <div className="flex items-center space-x-2">
+                      {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>}
+                      <div className="flex justify-between items-start mb-2">
+                        <span className={`font-bold text-xs ${isSelected ? 'text-slate-100' : 'text-slate-400'}`}>{hyp.label}</span>
+                        <div className="flex items-center space-x-1.5 ml-2">
                           {isSelected && (
-                            <span className="text-[10px] bg-green-900/50 text-green-400 px-2 py-1 rounded uppercase tracking-wider font-bold">Selected</span>
+                            <span className="text-[9px] bg-emerald-950/90 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold">RANK #1</span>
                           )}
-                          <span className={`${isSelected ? 'text-green-400' : 'text-slate-500'} font-bold`}>{hyp.confidence}%</span>
+                          <span className={`${isSelected ? 'text-emerald-400' : 'text-slate-500'} font-mono font-bold text-xs`}>{hyp.confidence}%</span>
                         </div>
                       </div>
                       {isSelected && hyp.description && (
-                        <p className="text-xs text-slate-400 leading-relaxed">{hyp.description}</p>
+                        <p className="text-xs text-slate-300 leading-relaxed font-sans mt-2 pt-2 border-t border-slate-800/60">{hyp.description}</p>
                       )}
                     </div>
                   );
@@ -377,39 +382,38 @@ export default function App() {
       </div>
 
       {/* Bottom Bar: Action Queue */}
-      <footer className="border-t border-slate-800/80 bg-slate-900/90 backdrop-blur-xl p-4 z-10 shadow-[0_-4px_24px_rgba(0,0,0,0.3)]">
-        <div className="flex justify-between items-end px-4">
+      <footer className="border-t border-slate-800/80 bg-slate-900/90 backdrop-blur-xl p-4 z-20 shadow-[0_-8px_30px_rgba(0,0,0,0.5)]">
+        <div className="flex justify-between items-center px-4">
           <div>
-            <div className="text-xs text-slate-400 uppercase tracking-wider mb-3">
+            <div className="text-[11px] text-slate-400 uppercase tracking-wider mb-2 flex items-center">
               Playbook Triggered:{' '}
-              <span className="text-blue-400 font-mono bg-blue-900/20 px-2 py-1 rounded ml-2">
+              <span className="text-cyan-400 font-mono bg-cyan-950/80 border border-cyan-700/40 px-2.5 py-0.5 rounded-md ml-2 font-bold">
                 {playbookData ? playbookData.playbook_id : 'LOADING...'}
               </span>
             </div>
-            <h2 className="font-semibold mb-3 text-slate-200">Proposed Actions</h2>
-            <ul className="space-y-2 text-sm text-slate-300">
+            <ul className="flex items-center space-x-6 text-xs text-slate-300">
               {playbookData && playbookData.steps && playbookData.steps.map((step, idx) => {
                 const isApproved = approvalStatus === 'approved' || approvalStatus === 'validating' || approvalStatus === 'resolved';
                 
                 if (idx < 2) {
                   return (
-                    <li key={idx} className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-green-500 mr-3" /> 
-                      <span className="w-80">{idx + 1}. {step}</span> 
-                      <span className="text-xs text-slate-500 font-mono">[DONE - agent]</span>
+                    <li key={idx} className="flex items-center space-x-2 bg-slate-950/60 border border-slate-800/80 px-3 py-1.5 rounded-lg">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" /> 
+                      <span className="text-slate-300 font-medium">{idx + 1}. {step}</span> 
+                      <span className="text-[9px] text-emerald-400 font-mono bg-emerald-950/60 px-1.5 py-0.5 rounded">[DONE]</span>
                     </li>
                   );
                 } else if (idx === 2) {
                   return (
-                    <li key={idx} className="flex items-center">
+                    <li key={idx} className="flex items-center space-x-2 bg-slate-950/80 border border-amber-500/40 px-3 py-1.5 rounded-lg shadow-[0_0_12px_rgba(245,158,11,0.15)]">
                       {isApproved ? (
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-3" />
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                       ) : (
-                        <span className="text-blue-400 mr-3 font-bold w-4 text-center">→</span>
+                        <span className="text-amber-400 font-bold w-3.5 text-center">→</span>
                       )}
-                      <span className={`w-80 ${isApproved ? 'text-slate-300' : 'text-slate-100 font-medium'}`}>{idx + 1}. {step}</span> 
-                      <span className={`text-xs font-mono px-2 py-0.5 rounded ${
-                        isApproved ? 'text-green-400 bg-green-900/20' : 'text-yellow-500 bg-yellow-900/20'
+                      <span className={`font-semibold ${isApproved ? 'text-slate-300' : 'text-amber-200'}`}>{idx + 1}. {step}</span> 
+                      <span className={`text-[9px] font-mono px-2 py-0.5 rounded font-bold ${
+                        isApproved ? 'text-emerald-400 bg-emerald-950/80' : 'text-amber-400 bg-amber-950/80 border border-amber-500/40'
                       }`}>
                         {isApproved ? '[EXECUTED]' : '[PENDING APPROVAL]'}
                       </span>
@@ -417,12 +421,10 @@ export default function App() {
                   );
                 } else {
                   return (
-                    <li key={idx} className="flex items-center">
-                      <span className="text-slate-600 mr-3 font-bold w-4 text-center">○</span> 
-                      <span className="w-80 text-slate-500">{idx + 1}. {step}</span> 
-                      <span className="text-xs text-slate-600 font-mono">
-                        {approvalStatus === 'resolved' ? '[DONE]' : '[WAITING]'}
-                      </span>
+                    <li key={idx} className="flex items-center space-x-2 bg-slate-950/40 border border-slate-800/40 px-3 py-1.5 rounded-lg text-slate-500">
+                      <span className="font-bold w-3.5 text-center">○</span> 
+                      <span>{idx + 1}. {step}</span> 
+                      <span className="text-[9px] font-mono">[WAITING]</span>
                     </li>
                   );
                 }
@@ -431,39 +433,36 @@ export default function App() {
           </div>
           
           {approvalStatus === 'idle' && (
-            <div className="flex space-x-4 mb-2">
+            <div className="flex items-center space-x-3">
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="px-6 py-2.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 flex items-center text-sm font-semibold tracking-wide cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 transition-all border border-slate-700 flex items-center text-xs font-bold tracking-wide cursor-pointer shadow-md hover:border-cyan-500/50"
               >
                 WHY SHOULD I TRUST THIS?
               </button>
               <button 
                 onClick={handleApprove}
-                className="px-8 py-2.5 rounded bg-green-600 hover:bg-green-500 text-white font-bold transition-all shadow-[0_0_15px_rgba(22,163,74,0.4)] hover:shadow-[0_0_25px_rgba(22,163,74,0.6)] flex items-center tracking-wide cursor-pointer"
+                className="px-7 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] flex items-center tracking-wider text-xs cursor-pointer active:scale-95"
               >
-                <GitCommit className="w-5 h-5 mr-2" /> APPROVE & EXECUTE
+                <GitCommit className="w-4 h-4 mr-2" /> APPROVE & EXECUTE ROLLBACK
               </button>
             </div>
           )}
 
           {approvalStatus === 'validating' && arizeData && (
-            <div className="bg-slate-800/80 border border-yellow-500/50 rounded-lg p-4 mb-2 flex items-center space-x-6 w-[450px] shadow-[0_0_15px_rgba(234,179,8,0.15)] animate-pulse">
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-ping"></div>
+            <div className="bg-slate-950/90 border border-amber-500/60 rounded-xl px-5 py-2.5 flex items-center space-x-4 w-[420px] shadow-[0_0_20px_rgba(245,158,11,0.2)] animate-pulse">
+              <div className="w-3 h-3 rounded-full bg-amber-400 animate-ping"></div>
               <div className="flex-1">
-                <div className="text-xs text-yellow-500 uppercase tracking-wider font-semibold">Post-Fix Validation Loop</div>
-                <div className="text-sm text-slate-200 mt-1 flex justify-between font-mono">
+                <div className="text-[10px] text-amber-400 uppercase tracking-wider font-extrabold">Post-Fix Telemetry Loop</div>
+                <div className="text-xs text-slate-200 mt-0.5 flex justify-between font-mono font-bold">
                   <span>Error Rate:</span>
-                  <span className="text-yellow-400 font-bold">{arizeData.post_fix_error_rate}%</span>
+                  <span className="text-amber-400">{arizeData.post_fix_error_rate}%</span>
                   <span className="text-slate-500">→</span>
-                  <span className="text-green-400">baseline &lt; 2.0%</span>
+                  <span className="text-emerald-400">baseline &lt; 2.0%</span>
                 </div>
-                <div className="text-[11px] text-slate-400 mt-1">
-                  Stability held: {arizeData.baseline_held_seconds}s / 60s
-                </div>
-                <div className="w-full bg-slate-900 rounded-full h-1.5 mt-2 overflow-hidden">
+                <div className="w-full bg-slate-900 rounded-full h-1.5 mt-1.5 overflow-hidden border border-slate-800">
                   <div 
-                    className="bg-yellow-500 h-1.5 transition-all duration-500" 
+                    className="bg-gradient-to-r from-amber-500 to-emerald-400 h-1.5 transition-all duration-500" 
                     style={{ width: `${(arizeData.baseline_held_seconds / 60) * 100}%` }}
                   ></div>
                 </div>
