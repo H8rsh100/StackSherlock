@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import asyncio
 import json
+from datetime import datetime, timezone
 
 app = FastAPI(title="StackSherlock API", description="Autonomous Incident Command Agent API")
 
@@ -19,8 +20,57 @@ active_incident = {
     "incident_id": "INC-2024-047",
     "scenario": "A",
     "status": "investigating",
-    "validation_step": 0
+    "validation_step": 0,
+    "mr_url": None,
 }
+
+GRAPH_PAYLOADS = {
+    "A": {
+        "title": "Auth DB Exhaustion",
+        "subtitle": "Pool misconfig cascades into checkout timeouts",
+        "nodes": [
+            {"id": "1", "label": "Deployment v2.3.1 (GitLab MR #402)"},
+            {"id": "2", "label": "Connection Pool Misconfigured"},
+            {"id": "3", "label": "DB Connections Exhausted (100/100)"},
+            {"id": "4", "label": "Auth Service Latency +840ms"},
+            {"id": "5", "label": "Checkout API 504 Gateway Timeouts"},
+        ],
+        "edges": [
+            {"id": "e1-2", "source": "1", "target": "2"},
+            {"id": "e2-3", "source": "2", "target": "3"},
+            {"id": "e3-4", "source": "3", "target": "4"},
+            {"id": "e4-5", "source": "4", "target": "5"},
+        ],
+    },
+    "B": {
+        "title": "Redis Timeout Cascade",
+        "subtitle": "Aggressive cache timeout saturates primary DB",
+        "nodes": [
+            {"id": "1", "label": "Deployment v3.0.0 (GitLab MR #512)"},
+            {"id": "2", "label": "Redis Cache Miss Rate 80%"},
+            {"id": "3", "label": "RedisTimeoutError (Cluster Unresponsive)"},
+            {"id": "4", "label": "Fallback DB CPU Saturation 100%"},
+            {"id": "5", "label": "Checkout API 504 Gateway Timeouts"},
+        ],
+        "edges": [
+            {"id": "e1-2", "source": "1", "target": "2"},
+            {"id": "e2-3", "source": "2", "target": "3"},
+            {"id": "e3-4", "source": "3", "target": "4"},
+            {"id": "e4-5", "source": "4", "target": "5"},
+        ],
+    },
+}
+
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "ok",
+        "service": "stacksherlock-api",
+        "time": datetime.now(timezone.utc).isoformat(),
+        "active_incident": active_incident["incident_id"],
+        "scenario": active_incident["scenario"],
+    }
 
 class TriggerIncidentRequest(BaseModel):
     scenario: str = "A"
@@ -35,11 +85,14 @@ class LogMetricRequest(BaseModel):
 @app.post("/incident/trigger")
 async def trigger_incident(request: TriggerIncidentRequest):
     scenario = request.scenario.upper()
+    if scenario not in ("A", "B"):
+        scenario = "A"
     incident_id = "INC-2024-047" if scenario == "A" else "INC-2024-052"
     active_incident["incident_id"] = incident_id
     active_incident["scenario"] = scenario
     active_incident["status"] = "investigating"
     active_incident["validation_step"] = 0
+    active_incident["mr_url"] = None
     return {"status": "triggered", "incident_id": incident_id, "scenario": scenario}
 
 @app.get("/incident/{id}")
@@ -58,7 +111,9 @@ async def mock_event_generator(scenario: str):
             {"timestamp": "03:42:05 UTC", "type": "reasoning", "message": "Anomaly detected: DB connection pool utilization at 95%."},
             {"timestamp": "03:42:08 UTC", "type": "investigating", "message": "Querying GitLab for recent deployments..."},
             {"timestamp": "03:42:15 UTC", "type": "resolved", "message": "Found correlation: auth-service v2.3.1 deployed at 03:38 UTC"},
-            {"timestamp": "03:42:20 UTC", "type": "investigating", "message": "Analyzing git diff with Claude API..."}
+            {"timestamp": "03:42:20 UTC", "type": "investigating", "message": "Analyzing git diff with Claude API..."},
+            {"timestamp": "03:42:28 UTC", "type": "reasoning", "message": "Hypothesis locked: connection pool leak from MaxConnections 100 to 10."},
+            {"timestamp": "03:42:34 UTC", "type": "resolved", "message": "Playbook AUTH_DB_CASCADE_FAILURE_v2 ready for human approval."},
         ]
     else:
         events = [
@@ -66,11 +121,13 @@ async def mock_event_generator(scenario: str):
             {"timestamp": "14:19:05 UTC", "type": "reasoning", "message": "Anomaly detected: Redis cache miss rate spiked to 80%."},
             {"timestamp": "14:19:08 UTC", "type": "investigating", "message": "Querying GitLab for recent deployments..."},
             {"timestamp": "14:19:15 UTC", "type": "resolved", "message": "Found correlation: inventory-service v3.0.0 deployed at 14:10 UTC"},
-            {"timestamp": "14:19:20 UTC", "type": "investigating", "message": "Analyzing git diff with Claude API..."}
+            {"timestamp": "14:19:20 UTC", "type": "investigating", "message": "Analyzing git diff with Claude API..."},
+            {"timestamp": "14:19:27 UTC", "type": "reasoning", "message": "Hypothesis locked: Redis timeout reduced from 2.0s to 0.1s."},
+            {"timestamp": "14:19:33 UTC", "type": "resolved", "message": "Playbook REDIS_TIMEOUT_CASCADE_v1 ready for human approval."},
         ]
     for event in events:
         yield f"data: {json.dumps(event)}\n\n"
-        await asyncio.sleep(1.2)
+        await asyncio.sleep(1.1)
 
 @app.get("/incident/{id}/stream")
 async def incident_stream(id: str):
@@ -164,23 +221,36 @@ from agent.gitlab_mcp import execute_rollback
 
 @app.post("/approval/approve/{id}")
 async def approve_action(id: str):
-    # Transition the active incident state
     active_incident["status"] = "validating"
     active_incident["validation_step"] = 0
-    
+
     target_commit = "abc1234" if active_incident["scenario"] == "A" else "inv_old_456"
     result = execute_rollback(incident_id=id, commit_hash=target_commit)
-    
+    active_incident["mr_url"] = result.get("mr_url")
+
     return {
-        "status": "approved_and_executed", 
-        "incident_id": id, 
-        "gitlab_result": result
+        "status": "approved_and_executed",
+        "incident_id": id,
+        "gitlab_result": result,
     }
 
 @app.post("/approval/reject/{id}")
 async def reject_action(id: str):
     active_incident["status"] = "rejected"
-    return {"status": "rejected", "incident_id": id}
+    active_incident["validation_step"] = 0
+    active_incident["mr_url"] = None
+    return {
+        "status": "rejected",
+        "incident_id": id,
+        "message": "No GitLab rollback was executed.",
+    }
+
+
+@app.get("/agent/graph/{id}")
+async def get_causal_graph(id: str):
+    scenario = active_incident["scenario"]
+    payload = GRAPH_PAYLOADS.get(scenario, GRAPH_PAYLOADS["A"])
+    return {"incident_id": id, "scenario": scenario, **payload}
 
 @app.get("/memory/similar/{id}")
 async def find_similar_incidents(id: str):

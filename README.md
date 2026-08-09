@@ -1,18 +1,15 @@
-# 🤖 StackSherlock
+# StackSherlock
 
 [![GitHub License](https://img.shields.io/github/license/H8rsh100/StackSherlock?style=for-the-badge&color=blue)](LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-green?style=for-the-badge&logo=python)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react)](https://react.dev/)
-[![React Flow](https://img.shields.io/badge/React%20Flow-FF007A?style=for-the-badge&logo=react-flow&logoColor=white)](https://reactflow.dev/)
 
-> **"Modern observability tools tell you WHAT failed. StackSherlock determines WHY, decides WHAT TO DO, and executes the response."**
+> Modern observability tools tell you what failed. StackSherlock determines why, decides what to do, and executes the response.
 
-StackSherlock is an autonomous **AI-powered Incident Command Agent (SRE)**. When production services spike in error rates or latency, StackSherlock automatically triggers an investigation: pulling Elastic logs, auditing git diffs via LLMs, modeling the failure cascading path, proposing a rollback fix, and requesting human-in-the-loop authorization to merge the hotfix.
+StackSherlock is an autonomous AI-powered Incident Command Agent. When production error rates or latency spike, it investigates Elastic logs, audits git diffs, models the failure cascade, proposes a rollback, and waits for one human approval before GitLab execution. Arize validates recovery and MongoDB stores learned memory.
 
----
-
-## 🗺️ Architectural Workflow
+## Architectural workflow
 
 ```mermaid
 graph TD
@@ -20,110 +17,120 @@ graph TD
     B -->|Fetch Logs| C[(Elastic Cloud Logs)]
     B -->|Check Deployments| D[(GitLab Deployments)]
     B -->|Fetch Similar Incidents| E[(MongoDB Incident History)]
-    
+
     B -->|Orchestrate Context| F[Gemini Orchestrator]
     F -->|Git Diff Analysis| G[Claude API Code Auditor]
-    
+
     F -->|Determine Root Cause| H[Reasoning Engine]
     H -->|Generate Root Cause Node Graph| I[React Flow Dashboard]
-    
-    I -->|Human Review & One-Click Approval| J{Approve Fix?}
+
+    I -->|Human Review and One-Click Approval| J{Approve Fix?}
     J -->|Yes| K[GitLab MCP Rollback MR]
     J -->|No| L[Mark Rejected]
-    
-    K -->|Monitor Post-Fix Metrics| M[Arize Model/Telemetry Validation]
+
+    K -->|Monitor Post-Fix Metrics| M[Arize Telemetry Validation]
     M -->|Error Rate Normalizes| N[Write resolved incident to Mongo learned memory]
 ```
 
----
+## Key capabilities
 
-## ✨ Key Capabilities
+1. **Multi-LLM orchestration**: Gemini commands the investigation. Claude Sonnet audits the git diff risk.
+2. **Interactive causal graph**: React Flow renders the cascade path as the agent investigates.
+3. **GitLab MCP actions**: Creates a rollback branch and merge request after approval.
+4. **Human-in-the-loop guardrails**: Confidence scores, audit modal, approve, and reject before any change lands.
+5. **Memory feedback loop**: Resolved incidents return to MongoDB for faster later matches.
 
-1. **Multi-LLM Orchestration**: Employs **Gemini** as the overall command orchestrator and **Claude Sonnet** as the code-level git diff risk auditor to ensure precision diagnosis.
-2. **Interactive Cascading Root Cause Graph**: Renders the dependency propagation of failures using **React Flow**, making complex cascade paths visually clear.
-3. **Automated GitLab MCP Integrations**: Generates a rollback branch, pushes changes, and creates a Merge Request automatically.
-4. **Guardrails & Human-in-the-loop**: Never deploys fixes autonomously; exposes a unified dashboard highlighting the risk-assessment, confidence scoring, and playbook logs with a single-click "Approve & Execute" button.
-5. **Continuous Memory Feedback Loop**: Backs resolved cases into MongoDB, referencing historical precedents to speed up subsequent debugging cycles.
-
----
-
-## 📂 Project Structure
+## Project structure
 
 ```
 stacksherlock/
-├── frontend/          # React + Tailwind + React Flow Dashboard
-├── backend/           # Python FastAPI API Server
-├── agent/             # Gemini Agent Builder configs, MCP tools & prompts
-├── fixtures/          # Simulated log streams, incident scenarios
-├── scripts/           # Elastic indexing & MongoDB seeding tools
+├── frontend/          # React + Tailwind + React Flow command center
+├── backend/           # Python FastAPI API server
+├── agent/             # Orchestrator, MCP tools, auditor hooks
+├── fixtures/          # Simulated log streams and scenarios
+├── scripts/           # Elastic indexing and MongoDB seeding
+├── docker-compose.yml # Optional local multi-service run
 └── README.md
 ```
 
----
+## Configuration
 
-## ⚙️ Configuration & Environment Setup
-
-Duplicate `.env.example` to `.env` in the root directory:
+Copy `.env.example` to `.env` in the project root:
 
 ```bash
-# Database
 MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/stacksherlock
-
-# Elastic Cloud
 ELASTIC_URL=https://your-cluster-id.es.us-central1.gcp.cloud.es.io:443
 ELASTIC_API_KEY=your_base64_encoded_api_key
-
-# Gemini Agent Orchestrator
 GEMINI_API_KEY=your_google_ai_studio_key
-
-# Claude Auditor
 ANTHROPIC_API_KEY=your_anthropic_api_key
-
-# GitLab MCP
 GITLAB_TOKEN=your_gitlab_personal_access_token
-
-# Arize API
 ARIZE_SPACE_KEY=your_arize_space_key
 ARIZE_API_KEY=your_arize_api_key
 ```
 
----
+Frontend optional override:
 
-## 🚀 Running locally
+```bash
+# frontend/.env
+VITE_API_URL=http://localhost:8000
+```
 
-### 1. Backend Server Setup
+Without live credentials the demo runs in mock mode with fixture scenarios A and B.
+
+## Run locally
+
+### Backend
+
 Requires Python 3.10+.
 
 ```bash
 cd backend
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+# Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
-
-# Start backend server
-python -m uvicorn main:app --port 8000 --reload
+cd ..
+python -m uvicorn backend.main:app --port 8000 --reload
 ```
 
-The API will be available at `http://localhost:8000`. You can inspect the Swagger interactive documentation at `http://localhost:8000/docs`.
+API: `http://localhost:8000`  
+Docs: `http://localhost:8000/docs`  
+Health: `http://localhost:8000/health`
 
-### 2. Frontend Dashboard Setup
+### Frontend
 
 ```bash
 cd frontend
-# Install dependencies
 npm install
-
-# Run the development server
 npm run dev
 ```
 
-Open `http://localhost:5173/` in your browser.
+Open `http://localhost:5173/`.
 
----
+### Docker Compose (optional)
 
-## 🤝 License
+```bash
+docker compose up
+```
 
-This project is open-source and available under the [MIT License](LICENSE).
+## Demo flow
+
+1. Open the landing page and enter the command center.
+2. Pick Scenario A (Auth DB Exhaustion) or Scenario B (Redis Timeout Cascade).
+3. Watch the live agent feed and animated causal graph.
+4. Open **Why should I trust this?** to review diff, risk, and precedents.
+5. **Approve & execute** to open the mock GitLab MR and run the Arize validation loop, or **Reject** to stop with no action.
+
+## Tests and CI
+
+```bash
+pip install -r backend/requirements.txt pytest httpx
+pytest backend/tests/
+cd frontend && npm run build
+```
+
+GitHub Actions runs backend pytest plus frontend lint/build on pushes and pull requests to `main`.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
